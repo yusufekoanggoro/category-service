@@ -37,7 +37,7 @@ func (uc *categoryUsecase) CreateCategory(ctx context.Context, req *domain.Creat
 		}
 		category = newCategory
 
-		grpcRequest := &protoCategory.SaveCategoryRequest{Name: category.Name}
+		grpcRequest := &protoCategory.SaveCategoryRequest{CategoryID: int64(category.ID), Name: category.Name}
 		_, err = uc.bookClient.SaveCategory(ctx, grpcRequest)
 		if err != nil {
 			return err
