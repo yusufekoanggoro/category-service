@@ -70,11 +70,11 @@ func (h *CategoryHandler) GetCategoryByID(c *gin.Context) {
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid author ID")
+		response.Error(c, http.StatusBadRequest, "Invalid category ID")
 		return
 	}
 
-	author, err := h.usecase.GetCategoryByID(uint(id))
+	category, err := h.usecase.GetCategoryByID(uint(id))
 	if err != nil {
 		if err == customErr.ErrNotFound {
 			response.Error(c, http.StatusNotFound, "Category not found")
@@ -85,7 +85,7 @@ func (h *CategoryHandler) GetCategoryByID(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, http.StatusOK, "Category retrieved successfully", author)
+	response.Success(c, http.StatusOK, "Category retrieved successfully", category)
 }
 
 func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
