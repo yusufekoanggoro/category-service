@@ -8,8 +8,6 @@ import (
 	"context"
 
 	protoCategory "category-service/proto/category"
-
-	"gorm.io/gorm"
 )
 
 type categoryUsecase struct {
@@ -26,26 +24,18 @@ func NewAuthorUsecase(
 
 func (uc *categoryUsecase) CreateCategory(ctx context.Context, req *domain.CreateCategoryRequest) (*sharedDomain.Category, error) {
 	var category *sharedDomain.Category
-	err := uc.repo.Transaction(func(tx *gorm.DB) error {
-		newCategory := &sharedDomain.Category{
-			Name: req.Name,
-		}
+	newCategory := &sharedDomain.Category{
+		Name: req.Name,
+	}
 
-		err := uc.repo.SaveCategory(tx, newCategory)
-		if err != nil {
-			return err
-		}
-		category = newCategory
+	err := uc.repo.SaveCategory(ctx, newCategory)
+	if err != nil {
+		return nil, err
+	}
+	category = newCategory
 
-		grpcRequest := &protoCategory.SaveCategoryRequest{CategoryID: int64(category.ID), Name: category.Name}
-		_, err = uc.bookClient.SaveCategory(ctx, grpcRequest)
-		if err != nil {
-			return err
-		}
-
-		return nil // Auto commit jika tidak ada error
-	})
-
+	grpcRequest := &protoCategory.SaveCategoryRequest{CategoryID: int64(category.ID), Name: category.Name}
+	_, err = uc.bookClient.SaveCategory(ctx, grpcRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -53,8 +43,8 @@ func (uc *categoryUsecase) CreateCategory(ctx context.Context, req *domain.Creat
 	return category, nil
 }
 
-func (uc *categoryUsecase) GetAllCategories(req *domain.PaginationRequest) (*domain.PaginatedResponse, error) {
-	categories, totalRows, err := uc.repo.GetAllCategories(req.Page, req.Limit)
+func (uc *categoryUsecase) GetAllCategories(ctx context.Context, req *domain.PaginationRequest) (*domain.PaginatedResponse, error) {
+	categories, totalRows, err := uc.repo.GetAllCategories(ctx, req.Page, req.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -70,8 +60,8 @@ func (uc *categoryUsecase) GetAllCategories(req *domain.PaginationRequest) (*dom
 	return paginatedResponse, nil
 }
 
-func (uc *categoryUsecase) GetCategoryByID(id uint) (*sharedDomain.Category, error) {
-	category, err := uc.repo.GetCategoryByID(id)
+func (uc *categoryUsecase) GetCategoryByID(ctx context.Context, id uint) (*sharedDomain.Category, error) {
+	category, err := uc.repo.GetCategoryByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -80,31 +70,23 @@ func (uc *categoryUsecase) GetCategoryByID(id uint) (*sharedDomain.Category, err
 
 func (uc *categoryUsecase) UpdateCategory(ctx context.Context, req *domain.UpdateCategoryRequest) (*sharedDomain.Category, error) {
 	var category *sharedDomain.Category
-	err := uc.repo.Transaction(func(tx *gorm.DB) error {
-		existingCategory, err := uc.repo.GetCategoryByID(req.ID)
-		if err != nil {
-			return err
-		}
+	existingCategory, err := uc.repo.GetCategoryByID(ctx, req.ID)
+	if err != nil {
+		return nil, err
+	}
 
-		if req.Name != nil {
-			existingCategory.Name = *req.Name
-		}
+	if req.Name != nil {
+		existingCategory.Name = *req.Name
+	}
 
-		err = uc.repo.SaveCategory(tx, existingCategory)
-		if err != nil {
-			return err
-		}
-		category = existingCategory
+	err = uc.repo.SaveCategory(ctx, existingCategory)
+	if err != nil {
+		return nil, err
+	}
+	category = existingCategory
 
-		grpcRequest := &protoCategory.SaveCategoryRequest{CategoryID: int64(category.ID), Name: category.Name}
-		_, err = uc.bookClient.SaveCategory(ctx, grpcRequest)
-		if err != nil {
-			return err
-		}
-
-		return nil // Auto commit jika tidak ada error
-	})
-
+	grpcRequest := &protoCategory.SaveCategoryRequest{CategoryID: int64(category.ID), Name: category.Name}
+	_, err = uc.bookClient.SaveCategory(ctx, grpcRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -113,20 +95,12 @@ func (uc *categoryUsecase) UpdateCategory(ctx context.Context, req *domain.Updat
 }
 
 func (uc *categoryUsecase) DeleteCategory(ctx context.Context, id uint) error {
-	err := uc.repo.Transaction(func(tx *gorm.DB) error {
-		err := uc.repo.DeleteCategory(tx, id)
-		if err != nil {
-			return err
-		}
+	err := uc.repo.DeleteCategory(ctx, id)
+	if err != nil {
+		return err
+	}
 
-		_, err = uc.bookClient.DeleteCategory(ctx, id)
-		if err != nil {
-			return err
-		}
-
-		return nil // Auto commit jika tidak ada error
-	})
-
+	_, err = uc.bookClient.DeleteCategory(ctx, id)
 	if err != nil {
 		return err
 	}

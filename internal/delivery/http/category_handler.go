@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strconv"
 
-	customErr "category-service/pkg/errors"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,11 +27,7 @@ func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 
 	book, err := h.usecase.CreateCategory(c.Request.Context(), &req)
 	if err != nil {
-		if err == customErr.ErrInternalError {
-			response.Error(c, http.StatusInternalServerError, "Internal server error")
-			return
-		}
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.Error(c, http.StatusInternalServerError, "Failed to create category")
 		return
 	}
 
@@ -47,15 +41,12 @@ func (h *CategoryHandler) GetAllCategories(c *gin.Context) {
 		return
 	}
 
-	categories, err := h.usecase.GetAllCategories(&req)
+	categories, err := h.usecase.GetAllCategories(c.Request.Context(), &req)
 	if err != nil {
-		if err == customErr.ErrInternalError {
-			response.Error(c, http.StatusInternalServerError, "Internal server error")
-			return
-		}
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.Error(c, http.StatusInternalServerError, "Failed to retrieve categories")
 		return
 	}
+
 	pagination := response.Pagination{
 		CurrentPage: req.Page,
 		PageSize:    req.Limit,
@@ -67,21 +58,15 @@ func (h *CategoryHandler) GetAllCategories(c *gin.Context) {
 }
 
 func (h *CategoryHandler) GetCategoryByID(c *gin.Context) {
-
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid category ID")
+		response.Error(c, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
-	category, err := h.usecase.GetCategoryByID(uint(id))
+	category, err := h.usecase.GetCategoryByID(c.Request.Context(), uint(id))
 	if err != nil {
-		if err == customErr.ErrNotFound {
-			response.Error(c, http.StatusNotFound, "Category not found")
-			return
-		}
-
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.Error(c, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
@@ -91,7 +76,7 @@ func (h *CategoryHandler) GetCategoryByID(c *gin.Context) {
 func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	categoryID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid category ID")
+		response.Error(c, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
@@ -104,11 +89,7 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 
 	book, err := h.usecase.UpdateCategory(c.Request.Context(), &req)
 	if err != nil {
-		if err == customErr.ErrInternalError {
-			response.Error(c, http.StatusInternalServerError, "Internal server error")
-			return
-		}
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.Error(c, http.StatusInternalServerError, "Failed to update category")
 		return
 	}
 
@@ -118,16 +99,12 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		response.Error(c, http.StatusBadRequest, "Invalid category ID")
+		response.Error(c, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
 	if err := h.usecase.DeleteCategory(c.Request.Context(), uint(id)); err != nil {
-		if err == customErr.ErrInternalError {
-			response.Error(c, http.StatusInternalServerError, "Internal server error")
-			return
-		}
-		response.Error(c, http.StatusInternalServerError, err.Error())
+		response.Error(c, http.StatusInternalServerError, "Failed to delete category")
 		return
 	}
 
