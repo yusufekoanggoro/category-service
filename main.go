@@ -20,13 +20,13 @@ func main() {
 
 	db := &database.GormDatabase{}
 	if err := db.Connect(cfg); err != nil {
-		log.Fatalf("Kesalahan koneksi database: %v", err)
+		log.Fatalf("Database connection error: %v", err)
 	}
 
 	if err := db.AutoMigrate(
 		&sharedDomain.Category{},
 	); err != nil {
-		log.Fatalf("Gagal melakukan migrasi: %v", err)
+		log.Fatalf("Failed to perform migration: %v", err)
 	}
 
 	bookClient := grpcservice.NewBookGRPCClient(cfg.GetBookGRPCHost() + ":" + cfg.GetBookGRPCPort())
@@ -54,6 +54,6 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Println("Server berjalan di port", port)
+	log.Println("HTTP Server listening on port ", port)
 	r.Run(":" + port)
 }
