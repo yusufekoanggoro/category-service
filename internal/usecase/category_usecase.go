@@ -7,7 +7,7 @@ import (
 	sharedDomain "category-service/pkg/shared/domain"
 	"context"
 
-	protoCategory "category-service/proto/category"
+	protoBook "category-service/proto/book"
 )
 
 type categoryUsecase struct {
@@ -34,7 +34,7 @@ func (uc *categoryUsecase) CreateCategory(ctx context.Context, req *domain.Creat
 	}
 	category = newCategory
 
-	grpcRequest := &protoCategory.SaveCategoryRequest{CategoryID: int64(category.ID), Name: category.Name}
+	grpcRequest := &protoBook.CategoryData{Id: int64(category.ID), Name: category.Name}
 	_, err = uc.bookClient.SaveCategory(ctx, grpcRequest)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (uc *categoryUsecase) UpdateCategory(ctx context.Context, req *domain.Updat
 	}
 	category = existingCategory
 
-	grpcRequest := &protoCategory.SaveCategoryRequest{CategoryID: int64(category.ID), Name: category.Name}
+	grpcRequest := &protoBook.CategoryData{Id: int64(category.ID), Name: category.Name}
 	_, err = uc.bookClient.SaveCategory(ctx, grpcRequest)
 	if err != nil {
 		return nil, err

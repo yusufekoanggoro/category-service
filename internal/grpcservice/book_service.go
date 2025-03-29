@@ -1,7 +1,7 @@
 package grpcservice
 
 import (
-	"category-service/proto/category"
+	"category-service/proto/book"
 	"context"
 	"log"
 
@@ -9,7 +9,7 @@ import (
 )
 
 type BookGRPCClient struct {
-	client category.CategoryServiceClient
+	client book.BookServiceClient
 }
 
 func NewBookGRPCClient(bookServiceAddr string) *BookGRPCClient {
@@ -18,14 +18,14 @@ func NewBookGRPCClient(bookServiceAddr string) *BookGRPCClient {
 		log.Fatalf("Failed to connect to Book Service: %v", err)
 	}
 
-	client := category.NewCategoryServiceClient(conn)
+	client := book.NewBookServiceClient(conn)
 	return &BookGRPCClient{client: client}
 }
 
-func (c *BookGRPCClient) SaveCategory(ctx context.Context, req *category.SaveCategoryRequest) (*category.SaveCategoryResponse, error) {
-	res, err := c.client.SaveCategory(ctx, req)
+func (c *BookGRPCClient) SaveCategory(ctx context.Context, req *book.CategoryData) (*book.BookResponse, error) {
+	res, err := c.client.ReceiveCategory(ctx, req)
 	if err != nil {
-		return &category.SaveCategoryResponse{
+		return &book.BookResponse{
 			Success: false,
 			Message: err.Error(),
 		}, err
@@ -34,11 +34,11 @@ func (c *BookGRPCClient) SaveCategory(ctx context.Context, req *category.SaveCat
 	return res, nil
 }
 
-func (c *BookGRPCClient) DeleteCategory(ctx context.Context, categoryId uint) (*category.DeleteCategoryResponse, error) {
-	req := &category.DeleteCategoryRequest{CategoryID: int64(categoryId)}
+func (c *BookGRPCClient) DeleteCategory(ctx context.Context, categoryId uint) (*book.BookResponse, error) {
+	req := &book.DeleteData{Id: int64(categoryId)}
 	res, err := c.client.DeleteCategory(ctx, req)
 	if err != nil {
-		return &category.DeleteCategoryResponse{
+		return &book.BookResponse{
 			Success: false,
 			Message: err.Error(),
 		}, err

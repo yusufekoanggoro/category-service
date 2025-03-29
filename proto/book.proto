@@ -1,0 +1,42 @@
+syntax = "proto3";
+package book;
+
+option go_package = "proto/book";
+
+service BookService {
+    rpc ReceiveUser(UserData) returns (BookResponse);
+    rpc DeleteUser(DeleteData) returns (BookResponse);
+
+    rpc ReceiveAuthor(AuthorData) returns (BookResponse);
+    rpc DeleteAuthor(DeleteData) returns (BookResponse);
+
+    rpc ReceiveCategory(CategoryData) returns (BookResponse);
+    rpc DeleteCategory(DeleteData) returns (BookResponse);
+}
+
+message UserData {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+}
+
+message DeleteData {
+  int64 id = 1;
+}
+
+message AuthorData {
+  int64 id = 1;
+  string name = 2;
+  string bio = 3;
+}
+
+message CategoryData {
+  int64 id = 1;
+  string name = 2;
+}
+
+message BookResponse {
+  bool success = 1;
+  string message = 2;
+}
