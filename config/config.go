@@ -20,6 +20,9 @@ type ConfigProvider interface {
 	GetDBPassword() string
 	GetDBName() string
 	GetSSLMode() string
+
+	GetBasicAuthUsername() string
+	GetBasicAuthPassword() string
 }
 
 type EnvConfig struct {
@@ -35,6 +38,9 @@ type EnvConfig struct {
 
 	BookGRPCHost string
 	BookGRPCPort string
+
+	BasicAuthUsername string
+	BasicAuthPassword string
 }
 
 func (e *EnvConfig) GetHTTPHost() string { return e.HTTPHost }
@@ -49,6 +55,9 @@ func (e *EnvConfig) GetDBUser() string     { return e.DBUser }
 func (e *EnvConfig) GetDBPassword() string { return e.DBPassword }
 func (e *EnvConfig) GetDBName() string     { return e.DBName }
 func (e *EnvConfig) GetSSLMode() string    { return e.SSLMode }
+
+func (e *EnvConfig) GetBasicAuthUsername() string { return e.BasicAuthUsername }
+func (e *EnvConfig) GetBasicAuthPassword() string { return e.BasicAuthPassword }
 
 func LoadConfig() ConfigProvider {
 	err := godotenv.Load()
@@ -69,5 +78,8 @@ func LoadConfig() ConfigProvider {
 		DBPassword: os.Getenv("DB_PASSWORD"),
 		DBName:     os.Getenv("DB_NAME"),
 		SSLMode:    os.Getenv("DB_SSLMODE"),
+
+		BasicAuthUsername: os.Getenv("BASIC_AUTH_USER"),
+		BasicAuthPassword: os.Getenv("BASIC_AUTH_PASS"),
 	}
 }

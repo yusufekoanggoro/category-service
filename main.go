@@ -2,11 +2,14 @@ package main
 
 import (
 	"category-service/config"
+	"category-service/config/key"
 	"category-service/internal/delivery/http"
 	"category-service/internal/repository"
 	"category-service/internal/usecase"
 	"category-service/pkg/database"
+	"category-service/pkg/middleware"
 	sharedDomain "category-service/pkg/shared/domain"
+	"category-service/pkg/token"
 	"fmt"
 	"log"
 
@@ -29,6 +32,16 @@ func main() {
 		log.Fatalf("Failed to perform migration: %v", err)
 	}
 
+	privateKeyPath := "config/key/private_key.pem"
+	publicKeyPath := "config/key/public_key.pem"
+
+	privateKey, publicKey, err := key.LoadRSAKeys(privateKeyPath, publicKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	jwtService := token.NewJWT(publicKey, privateKey)
+
 	bookClient := grpcservice.NewBookGRPCClient(cfg.GetBookGRPCHost() + ":" + cfg.GetBookGRPCPort())
 	fmt.Println("bookClient " + cfg.GetBookGRPCHost() + ":" + cfg.GetBookGRPCPort())
 
@@ -41,7 +54,7 @@ func main() {
 	r := gin.Default()
 	r.Use()
 
-	categoryRoutes := r.Group("/categories")
+	categoryRoutes := r.Group("/categories", middleware.JWTAuthMiddleware(jwtService))
 	{
 		categoryRoutes.POST("/", categoryHandler.CreateCategory)
 		categoryRoutes.GET("/", categoryHandler.GetAllCategories)
