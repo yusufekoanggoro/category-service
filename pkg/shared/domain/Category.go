@@ -7,9 +7,9 @@ import (
 )
 
 type Category struct {
-	ID        uint   `gorm:"primaryKey"`
-	Name      string `gorm:"unique;not null"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Name      string         `gorm:"unique;not null" json:"name"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deletedAt,omitempty"`
 }
