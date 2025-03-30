@@ -74,8 +74,8 @@ func main() {
 
 	categoryRoutes := httpServer.Group("/categories", middleware.JWTAuthMiddleware(jwtService))
 	{
-		categoryRoutes.POST("/", categoryHandler.CreateCategory)
-		categoryRoutes.GET("/", categoryHandler.GetAllCategories)
+		categoryRoutes.POST("", categoryHandler.CreateCategory)
+		categoryRoutes.GET("", categoryHandler.GetAllCategories)
 		categoryRoutes.GET("/:id", categoryHandler.GetCategoryByID)
 		categoryRoutes.PATCH("/:id", categoryHandler.UpdateCategory)
 		categoryRoutes.DELETE("/:id", categoryHandler.DeleteCategory)
