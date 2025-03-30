@@ -22,12 +22,14 @@ func NewJWT(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) Token {
 }
 
 func (j *JWT) GenerateToken(userId uint, expired time.Duration) (string, error) {
-	claims := jwt.MapClaims{
-		"userId":    userId,
-		"issuer":    "go-jwt-auth-service",
-		"expiresAt": jwt.NewNumericDate(time.Now().Add(expired)),
-		"issuedAt":  jwt.NewNumericDate(time.Now()),
-		"subject":   "auth_token",
+	claims := domain.TokenClaims{
+		UserID: userId,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expired)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    "go-jwt-auth-service",
+			Subject:   "auth_token",
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
@@ -42,7 +44,7 @@ func (j *JWT) GenerateToken(userId uint, expired time.Duration) (string, error) 
 
 func (j *JWT) ValidateToken(tokenString string) (*domain.TokenClaims, error) {
 	// Parse token dan verifikasi menggunakan publicKey
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &domain.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Pastikan metode signing yang digunakan adalah RS256
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -53,21 +55,9 @@ func (j *JWT) ValidateToken(tokenString string) (*domain.TokenClaims, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		var tokenClaim domain.TokenClaims
-
-		if userId, ok := claims["userId"].(float64); ok {
-			tokenClaim.UserID = uint(userId)
-		} else {
-			return nil, fmt.Errorf("claim 'userId' invalid")
-		}
-
-		return &tokenClaim, nil
+	if claims, ok := token.Claims.(*domain.TokenClaims); ok && token.Valid {
+		fmt.Println(claims.UserID)
+		return claims, nil
 	}
 
 	return nil, fmt.Errorf("invalid token")
