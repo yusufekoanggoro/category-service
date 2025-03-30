@@ -36,7 +36,7 @@ func main() {
 		cancel()
 		if r := recover(); r != nil {
 			// notify if this service failed to start (to logstash or slack)
-			fmt.Println("Failed to start book service:", r)
+			fmt.Println("Failed to start category service:", r)
 			fmt.Printf("Stack trace: \n%s\n", debug.Stack())
 		}
 	}()
