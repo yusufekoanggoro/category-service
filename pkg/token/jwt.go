@@ -45,7 +45,7 @@ func (j *JWT) ValidateToken(tokenString string) (*domain.TokenClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Pastikan metode signing yang digunakan adalah RS256
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("metode signing tidak valid")
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return j.publicKey, nil
 	})
@@ -54,17 +54,21 @@ func (j *JWT) ValidateToken(tokenString string) (*domain.TokenClaims, error) {
 		return nil, err
 	}
 
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		var tokenClaim domain.TokenClaims
 
 		if userId, ok := claims["userId"].(float64); ok {
 			tokenClaim.UserID = uint(userId)
 		} else {
-			return nil, fmt.Errorf("claim 'userId' tidak valid")
+			return nil, fmt.Errorf("claim 'userId' invalid")
 		}
 
 		return &tokenClaim, nil
 	}
 
-	return nil, fmt.Errorf("token tidak valid")
+	return nil, fmt.Errorf("invalid token")
 }
